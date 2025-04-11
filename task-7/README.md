@@ -9,3 +9,5 @@
 - Write a query using window functions such as `ROW_NUMBER()`, `RANK()`, or `DENSE_RANK()` to assign ranks (e.g., rank employees by salary within each department).
 - Use `PARTITION BY` to define groups and `ORDER BY` to specify the ranking order.
 - Experiment with other window functions like `LEAD()` or `LAG()` to access adjacent row values.
+
+[Commands](./commands.txt)
