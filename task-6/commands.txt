@@ -1,0 +1,47 @@
+-- Calculate date difference
+SELECT DATEDIFF(CURDATE(), '2025-03-01') AS days_difference;
+
+output:
+    41
+
+
+-- Add and subtract dates
+SELECT DATE_ADD(CURDATE(), INTERVAL 7 DAY) AS seven_days_later;
+
+output:
+    18-04-2025
+
+SELECT DATE_SUB(CURDATE(), INTERVAL 30 DAY) AS thirty_days_ago;
+
+output:
+    12-03-2025
+
+
+-- Filter orders from the last 30 days
+SELECT * FROM orders
+WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
+
+
+output:
+   +------------+
+   |   Orders   | 
+   +------------+
+   | 2025-04-10 |
+   +------------+
+   | 2025-03-20 |
+   +------------+
+
+
+-- Format date output
+SELECT DATE_FORMAT(order_date, '%d-%m-%Y') AS formatted_date
+FROM order
+
+output:
+   +----------------+
+   | formatted_date | 
+   +----------------+
+   |   10-04-2025   |
+   +----------------+
+   |   20-03-2025   |
+   +----------------+
+
