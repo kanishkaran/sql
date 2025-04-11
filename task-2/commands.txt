@@ -1,0 +1,28 @@
+-- Retrieve employees in the 'Software Development' department with salary above 60000, sorted by LastName
+SELECT * 
+FROM Employees
+WHERE Position = 'Software Developer' AND Salary > 60000
+ORDER BY LastName ASC;
+
+-- Retrieve employees in 'Operations' or 'Design', sorted by Salary descending
+SELECT * 
+FROM Employees
+WHERE Position = 'Operations Manager' OR Position = 'UI/UX Designer'
+ORDER BY Salary DESC;
+
+
+-- Sample Output --
+-- Output for first query
++------------+-----------+----------+--------------------+----------+
+| EmployeeID | FirstName | LastName | Position           | Salary   |
++------------+-----------+----------+--------------------+----------+
+| 2          | Jane      | Smith    | Software Developer | 65000.00 |
++------------+-----------+----------+--------------------+----------+
+
+-- Output for second query
++------------+-----------+----------+--------------------+----------+
+| EmployeeID | FirstName | LastName | Position           | Salary   |
++------------+-----------+----------+--------------------+----------+
+| 1          | John      | Doe      | Operations Manager | 75000.00 |
+| 3          | Alice     | Brown    | UI/UX Designer     | 60000.00 |
++------------+-----------+----------+--------------------+----------+
