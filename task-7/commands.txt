@@ -1,0 +1,41 @@
+
+-Use Window functions
+
+
+* Display ranks of employee in each dept based in salary
+SELECT
+  employee_id,
+  name,
+  department,
+  salary,
+  ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS row_num,
+  RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank,
+  DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dense_rank,
+  LEAD(salary) OVER (PARTITION BY department ORDER BY salary DESC) AS next_salary,
+  LAG(salary) OVER (PARTITION BY department ORDER BY salary DESC) AS previous_salary
+FROM employees;
+
+
+output:
++----+---------+---------------+--------+---------+-------+-------------+-------------+-----------------+
+| id |  name   | department_id | salary | row_num | rank  | dense_rank  | next_salary | previous_salary |
++----+---------+---------------+--------+---------+-------+-------------+-------------+-----------------+
+|  2 | Bob     | 1             | 6000   |   1     |   1   |     1       |    5000     |      NULL       |
+|  1 | Alice   | 1             | 5000   |   2     |   2   |     2       |    9000     |      6000       |
+|  4 | David   | 2             | 9000   |   1     |   1   |     1       |    7000     |      5000       |
+|  3 | Charlie | 2             | 7000   |   2     |   2   |     2       |    4500     |      9000       |
+|  6 | Frank   | 3             | 4500   |   1     |   1   |     1       |    4000     |      7000       |
+|  5 | Eve     | 3             | 4000   |   2     |   2   |     2       |    NULL     |      4500       |
++----+---------+---------------+--------+---------+-------+-------------+-------------+-----------------+
+
+
+ROW_NUMBER() -- outputs the row number based on the window/ OVER();
+
+RANK() -- Gives rank to rows and skips on tie;
+
+DENSE_RANK -- Gives rank to rows , doesn't skip rank on tie;
+
+LAG() -- outputs previous value of a column from the window;
+
+LEAD() -- outputs Next value of a column from the window;
+
