@@ -1,0 +1,27 @@
+-- Create the Employees table with defined data types and primary key constraint
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Position VARCHAR(100) NOT NULL,
+    Salary DECIMAL(10, 2) NOT NULL
+);
+
+-- Insert sample employee records into the Employees table
+INSERT INTO Employees (EmployeeID, FirstName, LastName, Position, Salary) VALUES
+    (1, 'John', 'Doe', 'Operations Manager', 75000.00),
+    (2, 'Jane', 'Smith', 'Software Developer', 65000.00),
+    (3, 'Alice', 'Brown', 'UI/UX Designer', 60000.00);
+
+-- Retrieve all records from the Employees table to verify data insertion
+SELECT * FROM Employees;
+
+
+-- Sample Output --
++------------+-----------+----------+--------------------+----------+
+| EmployeeID | FirstName | LastName | Position           | Salary   |
++------------+-----------+----------+--------------------+----------+
+| 1          | John      | Doe      | Operations Manager | 75000.00 |
+| 2          | Jane      | Smith    | Software Developer | 65000.00 |
+| 3          | Alice     | Brown    | UI/UX Designer     | 60000.00 |
++------------+-----------+----------+--------------------+----------+
