@@ -1,0 +1,119 @@
+-- Create customers table 
+CREATE TABLE customers(
+	CustomerId INT PRIMARY KEY,
+    firstName VARCHAR(20) NOT NULL,
+    lastName VARCHAR(20) NOT NULL
+);
+
+-- create orders table 
+CREATE TABLE orders(
+	orderID INT PRIMARY KEY,
+    customerID INT,
+    orderDate DATE NOT NULL,
+    Amount decimal(10, 2),
+    foreign key (customerID) references customers(CustomerID)
+);
+
+
+-- insert sample data 
+INSERT INTO Customers (CustomerID, FirstName, LastName) VALUES
+(1, 'Michael', 'Scott'),
+(2, 'Pam', 'Beesly'),
+(3, 'Jim', 'Halpert'),
+(4, 'Dwight', 'Schrute'),
+(5, 'Angela', 'Martin'),
+(6, 'Kevin', 'Malone');
+
+
+INSERT INTO Orders (OrderID, CustomerID, OrderDate, Amount) VALUES
+(101, 1, '2024-01-15', 250.00),
+(102, 1, '2024-02-20', 175.50),
+(103, 2, '2024-03-10', 320.00),
+(104, 4, '2024-01-22', 415.75),
+(105, 4, '2024-02-10', 180.00),
+(106, 5, '2024-03-05', 90.25);
+
+____________________________________________________________________________________________________________________________________________
+
+-- INNER JOIN: Get customers with their orders 
+select  c.firstName, o.orderDate, o.Amount 
+from customers c
+inner join Orders o 
+on c.CustomerId = o.customerId; 
+
+
+Output:
+
+-- Output for INNER JOIN
++-----------+----------+---------+------------+--------+
+| FirstName | LastName | OrderID | OrderDate  | Amount |
++-----------+----------+---------+------------+--------+
+| Michael   | Scott    | 101     | 2024-01-15 | 250.00 |
+| Michael   | Scott    | 102     | 2024-02-20 | 175.50 |
+| Pam       | Beesly   | 103     | 2024-03-10 | 320.00 |
+| Dwight    | Schrute  | 104     | 2024-01-22 | 415.75 |
+| Dwight    | Schrute  | 105     | 2024-02-10 | 180.00 |
+| Angela    | Martin   | 106     | 2024-03-05 | 90.25  |
++-----------+----------+---------+------------+--------+
+
+____________________________________________________________________________________________________________________________________________
+
+-- LEFT JOIN: Include customers with or without orders
+select  c.firstName, o.orderDate, o.Amount 
+from customers c
+left join Orders o 
+on c.CustomerId = o.customerId; 
+
+-- Output for LEFT JOIN
++-----------+----------+---------+------------+--------+
+| FirstName | LastName | OrderID | OrderDate  | Amount |
++-----------+----------+---------+------------+--------+
+| Michael   | Scott    | 101     | 2024-01-15 | 250.00 |
+| Michael   | Scott    | 102     | 2024-02-20 | 175.50 |
+| Pam       | Beesly   | 103     | 2024-03-10 | 320.00 |
+| Dwight    | Schrute  | 104     | 2024-01-22 | 415.75 |
+| Dwight    | Schrute  | 105     | 2024-02-10 | 180.00 |
+| Angela    | Martin   | 106     | 2024-03-05 | 90.25  |
+| Jim       | Halpert  | NULL    | NULL       | NULL   |
+| Kevin     | Malone   | NULL    | NULL       | NULL   |
++-----------+----------+---------+------------+--------+
+
+
+____________________________________________________________________________________________________________________________________________
+
+-- Find Customer's Total order and total Amount
+select c.firstName, count(o.orderDate) as Total_orders, sum(o.Amount) as Total_Amount
+from customers c join Orders o on c.customerId = o.customerId
+group by c.firstName;
+
+-- INNER JOIN GROUP BY firstName
++-----------+--------------+--------------+
+| FirstName | Total_orders | Total_Amount |
++-----------+--------------+--------------+
+| Michael   | 2            | 425.50       |
+| Pam       | 1            | 320.00       |
+| Dwight    | 2            | 595.75       |
+| Angela    | 1            | 90.25        |
++-----------+--------------+--------------+
+
+
+____________________________________________________________________________________________________________________________________________
+
+-- Find Orders of All Customers
+select c.firstName, count(o.orderDate) as Total_orders, sum(o.Amount) as Total_Amount 
+from customers c left join Orders o on c.customerId = o.customerId
+group by c.firstName;
+
+
+-- LEFT JOIN GROUP BY firstName (includes customers with 0 orders)
++-----------+--------------+--------------+
+| FirstName | Total_orders | Total_Amount |
++-----------+--------------+--------------+
+| Michael   | 2            | 425.50       |
+| Pam       | 1            | 320.00       |
+| Jim       | 0            | NULL         |
+| Dwight    | 2            | 595.75       |
+| Angela    | 1            | 90.25        |
+| Kevin     | 0            | NULL         |
++-----------+--------------+--------------+
+____________________________________________________________________________________________________________________________________________
