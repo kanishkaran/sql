@@ -1,0 +1,64 @@
+--CTE/ COMMAN TABLE EXPRESSIONS
+
+
+* Usage with Subqueries
+select name, salary, department_id from employees e1 
+where salary >
+	(select avg(salary) from employees e2
+	where e1.department_id = e2.department_id);
+
+* Non-recursive CTE
+
+WITH dept_avg AS (
+  SELECT department_id, AVG(salary) AS avg_salary
+  FROM employees
+  GROUP BY department_id
+)
+
+SELECT e.*
+FROM employees e
+JOIN dept_avg d ON e.department_id = d.department_id
+WHERE e.salary > d.avg_salary;
+
+output:
+
++----+-------+--------+-------------- +
+| id | name  | salary | department_id |
++----+-------+--------+---------------+
+| 2  | Bob   | 6000   | 1             |
+| 4  | David | 9000   | 3             |
+| 6  | Frank | 4500   | 5             |
++----+-------+--------+---------------+
+
+
+
+* RECURSIVE CTE
+
+WITH RECURSIVE employee_hierarchy AS (
+  -- Anchor member: top-level manager
+  SELECT id, name, manager_id, 1 AS level
+  FROM employees
+  WHERE manager_id IS NULL
+
+  UNION ALL
+
+  -- Recursive member: employees reporting to the above
+  SELECT e.id, e.name, e.manager_id, eh.level + 1
+  FROM employees e
+  JOIN employee_hierarchy eh ON e.manager_id = eh.id
+)
+SELECT * FROM employee_hierarchy;
+
+
+output:
+
++----+---------+------------+-------+
+| id |  name   | manager_id | level |
++----+---------+------------+-------+
+|  1 | Alice   | NULL       |   1   |
+|  2 | Bob     | 1          |   2   |
+|  3 | Charlie | 1          |   2   |
+|  4 | David   | 2          |   3   |
+|  5 | Eve     | 2          |   3   |
+|  6 | Frank   | 4          |   4   |
++----+---------+------------+-------+
