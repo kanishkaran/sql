@@ -1,0 +1,41 @@
+-- Count the number of employees by Position
+SELECT Position, COUNT(*) AS EmployeeCount
+FROM Employees
+GROUP BY Position;
+
+-- Calculate the average salary by Position
+SELECT Position, AVG(Salary) AS AverageSalary
+FROM Employees
+GROUP BY Position;
+
+-- Retrieve positions with more than 1 employee
+SELECT Position, COUNT(*) AS EmployeeCount
+FROM Employees
+GROUP BY Position
+HAVING COUNT(*) > 1;
+
+
+sql_output_3 = 
+-- Output for first query
++--------------------+----------------+
+| Position           | EmployeeCount  |
++--------------------+----------------+
+| Operations Manager | 1              |
+| Software Developer | 1              |
+| UI/UX Designer     | 1              |
++--------------------+----------------+
+
+-- Output for second query
++--------------------+----------------+
+| Position           | AverageSalary  |
++--------------------+----------------+
+| Operations Manager | 75000.00       |
+| Software Developer | 65000.00       |
+| UI/UX Designer     | 60000.00       |
++--------------------+----------------+
+
+-- Output for third query (no result since all counts = 1)
++--------------------+----------------+
+| Position           | EmployeeCount  |
++--------------------+----------------+
+-- (No rows returned)
