@@ -1,0 +1,191 @@
+Stored Procedure Overview:
+    A stored procedure is a set of SQL statements that can be saved and reused. It encapsulates business logic within the database for better performance and consistency.
+
+    Procedure: PlaceOrder
+
+    Description:
+        This procedure handles the creation of a new order for a customer. It checks product stock,
+        inserts a new order into the 'Orders' table, adds corresponding details in 'OrderDetails',
+        and (optionally) reduces stock. Stock update is also enforced via trigger.
+
+    Definition:
+        DELIMITER //
+        CREATE PROCEDURE PlaceOrder(
+            IN p_productID INT,
+            IN p_customerID INT,
+            IN p_quantity INT,
+            IN p_price DECIMAL(10, 2)
+        )
+        BEGIN
+            DECLARE currentStock INT;
+            DECLARE o_orderID INT;
+
+            START TRANSACTION;
+
+                -- Check if stock is enough
+                SELECT stock INTO currentStock FROM products WHERE productID = p_productID;
+                IF currentStock < p_quantity THEN
+                    SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'Insufficient stock.';
+                END IF;
+
+                -- Create Order
+                INSERT INTO orders(customerID) VALUES (p_customerID);
+                SET o_orderID = LAST_INSERT_ID();
+
+                -- Add Order Details
+                INSERT INTO orderDetails(orderID, productID, quantity, price)
+                VALUES(o_orderID, p_productID, p_quantity, p_price);
+
+                -- Optional: Manual stock update (also handled by trigger)
+                UPDATE Products SET Stock = Stock - p_Quantity WHERE ProductID = p_ProductID;
+
+            COMMIT;
+        END //
+        DELIMITER ;
+
+    Usage:
+        CALL PlaceOrder(1, 1, 2, 999.99);  -- Alice orders 2 Laptops
+        CALL PlaceOrder(3, 3, 1, 149.99);  -- Carol orders 1 Headphone
+
+    Parameters:
+        - p_productID: ID of the product being ordered
+        - p_customerID: ID of the customer placing the order
+        - p_quantity: Number of units being ordered
+        - p_price: Price per unit at time of order
+
+    Output:
+        - Inserts into Orders and OrderDetails
+        - Updates stock if successful
+        - Fails with error if stock is insufficient
+
+
+Trigger Overview:
+    A trigger is an automatic database operation that is fired in response to specific events on a table.
+
+    Trigger: update_stock_after_order_trg
+
+    Description:
+        Automatically decreases product stock when a new entry is added to OrderDetails.
+
+    Definition:
+        DELIMITER //
+        CREATE TRIGGER update_stock_after_order_trg
+        AFTER INSERT ON orderDetails
+        FOR EACH ROW 
+        BEGIN
+            UPDATE products
+            SET stock = stock - NEW.quantity
+            WHERE productID = NEW.productID;
+        END //
+        DELIMITER ;
+
+    Trigger: log_stock_change_trg
+
+    Description:
+        Logs every change in product stock into the StockLog table after an update occurs.
+
+    Definition:
+        DELIMITER //
+        CREATE TRIGGER log_stock_change_trg
+        AFTER UPDATE ON Products
+        FOR EACH ROW
+        BEGIN 
+            IF OLD.Stock != NEW.Stock THEN
+                INSERT INTO stocklog(productID, changeAmount)
+                VALUES (NEW.productID, OLD.stock - NEW.stock);
+            END IF;
+        END //
+        DELIMITER ;
+
+    Output:
+        - Products table is updated automatically after order
+        - Stock changes are logged in StockLog
+
+
+View Overview:
+    A view is a virtual table based on a query, useful for simplifying complex joins or reporting.
+
+    View: OrderSummary
+
+    Description:
+        Summarizes orders with customer names and total purchase amounts.
+
+    Definition:
+        CREATE VIEW OrderSummary AS
+        SELECT o.OrderID, c.Name AS CustomerName, o.OrderDate,
+               SUM(od.Quantity * od.Price) AS TotalAmount
+        FROM Orders o
+        JOIN Customers c ON o.CustomerID = c.CustomerID
+        JOIN OrderDetails od ON o.OrderID = od.OrderID
+        GROUP BY o.OrderID;
+
+    Usage:
+        SELECT * FROM OrderSummary;
+
+    Output:
+        +---------+----------------+---------------------+--------------+
+        | OrderID | CustomerName   | OrderDate           | TotalAmount  |
+        +---------+----------------+---------------------+--------------+
+        |    1    | Alice Johnson  | 2025-04-12 12:24:01 |   1999.98    |
+        |    2    | Carol White    | 2025-04-12 12:25:33 |    149.99    |
+        +---------+----------------+---------------------+--------------+
+
+
+Test Execution & Sample Output:
+    CALL PlaceOrder(1, 1, 2, 999.99); -- Alice buys 2 Laptops
+    CALL PlaceOrder(3, 3, 1, 149.99); -- Carol buys 1 Headphone
+
+    -- Check Orders
+    SELECT * FROM Orders;
+    +---------+------------+---------------------+----------+
+    | OrderID | CustomerID | OrderDate           | Status   |
+    +---------+------------+---------------------+----------+
+    |   1     |     1      | 2025-04-12 12:24:01 | Pending  |
+    |   2     |     3      | 2025-04-12 12:25:33 | Pending  |
+    +---------+------------+---------------------+----------+
+
+    -- Check Order Details
+    SELECT * FROM OrderDetails;
+    +--------------+---------+-----------+----------+---------+
+    | OrderDetailID| OrderID | ProductID | Quantity | Price   |
+    +--------------+---------+-----------+----------+---------+
+    |      1       |    1    |     1     |    2     | 999.99  |
+    |      2       |    2    |     3     |    1     | 149.99  |
+    +--------------+---------+-----------+----------+---------+
+
+    -- Check Updated Product Stock
+    SELECT * FROM Products;
+    +-----------+-------------+--------+-------+---------------------+
+    | ProductID | Name        | Price  | Stock | CreatedAt           |
+    +-----------+-------------+--------+-------+---------------------+
+    |    1      | Laptop      | 999.99 |   8   | 2025-04-12 11:59:01 |
+    |    2      | Smartphone  | 599.99 |  20   | 2025-04-12 11:59:01 |
+    |    3      | Headphones  | 149.99 |  14   | 2025-04-12 11:59:01 |
+    |    4      | Keyboard    |  89.99 |  25   | 2025-04-12 11:59:01 |
+    +-----------+-------------+--------+-------+---------------------+
+
+    -- Check Stock Log
+    SELECT * FROM StockLog;
+    +--------+-----------+---------------------+--------------+
+    | LogID  | ProductID | ChangedAt           | ChangeAmount |
+    +--------+-----------+---------------------+--------------+
+    |   1    |     1     | 2025-04-12 12:24:01 |      2       |
+    |   2    |     3     | 2025-04-12 12:25:33 |      1       |
+    +--------+-----------+---------------------+--------------+
+
+
+Schema Summary:
+    Tables:
+        - Customers: Stores customer data.
+        - Products: Contains product catalog with pricing and stock.
+        - Orders: Tracks each customer order.
+        - OrderDetails: Line items in each order.
+        - StockLog: Logs stock change events.
+
+    Relationships:
+        - Orders.CustomerID → Customers.CustomerID (FK)
+        - OrderDetails.OrderID → Orders.OrderID (FK)
+        - OrderDetails.ProductID → Products.ProductID (FK)
+        - StockLog.ProductID → Products.ProductID (FK)
+
