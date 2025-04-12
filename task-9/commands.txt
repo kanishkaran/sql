@@ -1,0 +1,81 @@
+Stored Procedure Overview:
+    A stored procedure is a set of SQL statements that can be saved and reused. It encapsulates logic on the database server, improving performance and reducing redundancy.
+
+    Procedure: get_total_sales
+
+    Description:
+        This stored procedure calculates the total sales amount within a specified date range from the 'orders' table.
+
+    Definition:
+        DELIMITER //
+        CREATE PROCEDURE get_total_sales(IN fromDate DATE, IN toDate DATE)
+        BEGIN
+            SELECT SUM(amount) AS total_sales 
+            FROM orders 
+            WHERE orderDate BETWEEN fromDate AND toDate;
+        END //
+        DELIMITER ;
+
+    Usage:
+        CALL get_total_sales('2024-01-01', '2024-02-15');
+
+    Output:
+
+            +-------------+
+            | total_sales |
+            +-------------+
+            |   845.75    |
+            +-------------+
+
+    Parameters:
+        - fromDate: Start date of the period (DATE)
+        - toDate: End date of the period (DATE)
+
+    Output:
+        - total_sales: The sum of 'amount' in the 'orders' table for records where 'orderDate' is between the given dates.
+_________________________________________________________________________________________________________________________________________
+
+User-Defined Function Overview:
+    A user-defined function (UDF) is a custom SQL function that encapsulates reusable logic 
+    and returns a single value.
+
+    Function: calculate_discount
+
+    Description:
+        This UDF calculates a 20% discount on the input amount if it exceeds 500. 
+        Otherwise, it returns 0.
+
+    Definition:
+        DELIMITER //
+        CREATE FUNCTION calculate_discount(Amount DECIMAL(10, 2))
+        RETURNS DECIMAL(10, 2)
+        DETERMINISTIC
+        BEGIN
+            DECLARE discount DECIMAL(10, 2);
+            IF amount > 500 THEN
+                SET discount = amount * 0.2;
+            ELSE
+                SET discount = 0;
+            END IF;
+            RETURN discount;
+        END //
+        DELIMITER ;
+
+    Usage:
+        SELECT calculate_discount(600);
+        SELECT calculate_discount(0);
+
+    Output:
+
+            +----------------------+
+            | calculate_discount() |
+            +----------------------+
+            |        120.00        |
+            |         0.00         |
+            +----------------------+
+
+    Parameters:
+        - Amount: Input value to check for discount (DECIMAL)
+
+    Output:
+        - Returns 20% of the amount if it is greater than 500; otherwise returns 0.
